@@ -90,6 +90,8 @@ export default function Camera({ navigation }: any) {
         return imageUriBase64;
     }
 
+    //probar como reacciona la captura automatica cuando el rostro se mueve rapidamente.
+
     const handleFaceDetection = ({ faces }: any) => {
         if (faces && faces[0]) {
             // console.log("--->",JSON.stringify(faces, null, 2));
@@ -99,7 +101,7 @@ export default function Camera({ navigation }: any) {
             if (faces[0].inclinationAngle > 20 && faces[0].inclinationAngle < 25) {
                 console.log('mirando arriba');
                 takePicture();
-                tomar = false;
+                return;
             }
 
             if (faces[0].inclinationAngle > -25 && faces[0].inclinationAngle < -20) {
