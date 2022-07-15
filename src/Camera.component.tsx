@@ -1,7 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
-/* eslint-disable prettier/prettier */
 import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { RNCamera, TakePictureOptions } from 'react-native-camera';
 import RNFS from 'react-native-fs';
 import Mascara from './Mascara.component';
@@ -10,6 +9,8 @@ import Icon from 'react-native-vector-icons/FontAwesome5';
 export default function Camera({ navigation }: any) {
     let camera = useRef(null);
     const { width, height } = Dimensions.get('screen');
+    const [tomarFoto, setTomarFoto] = useState(true);
+
     const styles = StyleSheet.create({
         container: {
             flex: 1,
@@ -71,53 +72,117 @@ export default function Camera({ navigation }: any) {
         // },
     });
 
+    useEffect(() => {
+        setTomarFoto(true);
+    }, []);
 
-    let tomar = true;
-    async function takePicture() {
+    //-----------------------------------------------------------
+    // get a list of files and directories in the main bundle
+    RNFS.readDir(RNFS.DownloadDirectoryPath) // On Android, use "RNFS.DocumentDirectoryPath" (MainBundlePath is not defined)
+        .then((result) => {
+            // console.log('GOT RESULT', result[0]);
+            // stat the first file
+            return Promise.all([RNFS.stat(result[0].path), result[0].path]);
+        })
+        .then((statResult) => {
+            if (statResult[0].isFile()) {
+                // if we have a file, read it
+                return RNFS.readFile(statResult[1], 'utf8');
+            }
+            return 'no file';
+        })
+        .then((contents) => {
+            // log the file contents
+            // console.log(contents);
+        })
+        .catch((err) => {
+            console.log(err.message, err.code);
+        });
+    //---------------------------------------------------------------
+
+    async function takePicture(desafio: string) {
         if (camera) {
             const options: TakePictureOptions = { quality: 0.5, base64: true };
             const data = await camera.current?.takePictureAsync(options);
-            // await getBase64(data);
-            navigation.navigate('Preview', { image: data?.uri });
+            await getBase64(data, desafio);
+            // navigation.navigate('Preview', { image: data.uri });
         }
     }
 
-    async function getBase64(imageUri: string) {
-        console.log('==>', imageUri);
-        const filepath = imageUri.split('//')[1];
+    async function getBase64(imageData: any, desafio: string) {
+        const filepath = await imageData.uri.split('//')[1];
         const imageUriBase64 = await RNFS.readFile(filepath, 'base64');
-        console.log(imageUriBase64);
+
+        //-----------------------------
+        // create a path you want to write to
+        // :warning: on iOS, you cannot write into `RNFS.MainBundlePath`,
+        // but `RNFS.DocumentDirectoryPath` exists on both platforms and is writable
+
+        //mover a otro lado
+        var date = new Date();
+        var day = date.getDate();
+        var month = date.getMonth();
+        var year = date.getFullYear();
+        var hour = date.getTime();
+        var temp_date = day + month + year + '_' + hour;
+        var temp_name = `${desafio}_${temp_date}`;
+
+        var path = `${RNFS.DownloadDirectoryPath}/${temp_name}.txt`;
+
+        // write the file
+        RNFS.writeFile(path, imageUriBase64.toString(), 'utf8')
+            .then((success) => {
+                console.log('FILE WRITTEN!', success);
+            })
+            .catch((err) => {
+                console.log(err.message);
+            });
+        //----------------------------------------------------------
+
         return imageUriBase64;
     }
 
     //probar como reacciona la captura automatica cuando el rostro se mueve rapidamente.
 
     const handleFaceDetection = ({ faces }: any) => {
-        if (faces && faces[0]) {
+        if (tomarFoto && faces && faces[0]) {
             // console.log("--->",JSON.stringify(faces, null, 2));
             // console.log("--->",faces);
             // console.log("Y-->",faces[0].yawAngle +  "\t R-->",faces[0].rollAngle + "\t\t I-->", faces[0].inclinationAngle);
 
             if (faces[0].inclinationAngle > 20 && faces[0].inclinationAngle < 25) {
                 console.log('mirando arriba');
-                takePicture();
+                takePicture('arriba_');
+                setTomarFoto(false);
                 return;
             }
 
             if (faces[0].inclinationAngle > -25 && faces[0].inclinationAngle < -20) {
                 console.log('mirando abajo');
+                takePicture('abajo_');
+                setTomarFoto(false);
+                return;
             }
 
-            if ((faces[0].yawAngle > 0 && faces[0].yawAngle < 2)) {
+            if ((faces[0].yawAngle === 0)) {
                 console.log('mirando al frente');
+                takePicture('frente_');
+                setTomarFoto(false);
+                return;
             }
 
             if (faces[0].yawAngle > -25 && faces[0].yawAngle < -20) {
                 console.log('mirando a la derecha');
+                takePicture('derecha_');
+                setTomarFoto(false);
+                return;
             }
 
             if (faces[0].yawAngle > 20 && faces[0].yawAngle < 25) {
                 console.log('mirando a la izquierda');
+                takePicture('izquierda_');
+                setTomarFoto(false);
+                return;
             }
         }
     };
@@ -128,6 +193,7 @@ export default function Camera({ navigation }: any) {
                 ref={camera}
                 style={styles.camera}
                 type={RNCamera.Constants.Type.front}
+
                 flashMode={RNCamera.Constants.FlashMode.on}
                 captureAudio={false}
                 faceDetectionClassifications={RNCamera.Constants.FaceDetection.Classifications.all}
@@ -149,9 +215,9 @@ export default function Camera({ navigation }: any) {
                 }}
             />
             <View style={styles.containerText}>
-                <Text style={styles.text}>{'Asegurate que la foto \n haya sido tomada correctamtne'}</Text>
+                <Text style={styles.text}>{'Asegurate que la foto \n haya sido tomada correctamente'}</Text>
             </View>
-            <Mascara />
+            {/* <Mascara /> */}
             <View style={styles.iconFace}>
                 <Icon name="bug" size={50} color="blue" />
             </View>
@@ -159,8 +225,8 @@ export default function Camera({ navigation }: any) {
                 <Icon name="chevron-left" size={40} color="black" />
             </View>
             {/* <View style={styles.circuloInterior} /> */}
-            <Pressable onPress={takePicture} style={styles.boton}>
-                <Text style={styles.label}> SNAP </Text>
+            <Pressable onPress={()=>setTomarFoto(true)} style={styles.boton}>
+                <Text style={styles.label}> RESET </Text>
             </Pressable>
         </View >
     );
