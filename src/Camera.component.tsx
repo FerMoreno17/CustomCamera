@@ -3,13 +3,18 @@ import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import { RNCamera, TakePictureOptions } from 'react-native-camera';
 import RNFS from 'react-native-fs';
-import Mascara from './Mascara.component';
-import Icon from 'react-native-vector-icons/FontAwesome5';
+// import Mascara from './Mascara.component';
+// import Icon from 'react-native-vector-icons/FontAwesome5';
+// import { useNavigation } from '@react-navigation/native';
+// import FabIcon from './FabIcon.component';
+import SettingsModal from './SettingsModal.component';
 
-export default function Camera({ navigation }: any) {
+export default function CameraScreen() {
     let camera = useRef(null);
+    // const navigation = useNavigation();
     const { width, height } = Dimensions.get('screen');
     const [tomarFoto, setTomarFoto] = useState(true);
+    const [showModal, setShowModal] = useState(false);
 
     const styles = StyleSheet.create({
         container: {
@@ -86,14 +91,9 @@ export default function Camera({ navigation }: any) {
         })
         .then((statResult) => {
             if (statResult[0].isFile()) {
-                // if we have a file, read it
                 return RNFS.readFile(statResult[1], 'utf8');
             }
             return 'no file';
-        })
-        .then((contents) => {
-            // log the file contents
-            // console.log(contents);
         })
         .catch((err) => {
             console.log(err.message, err.code);
@@ -105,7 +105,7 @@ export default function Camera({ navigation }: any) {
             const options: TakePictureOptions = { quality: 0.5, base64: true };
             const data = await camera.current?.takePictureAsync(options);
             await getBase64(data, desafio);
-            // navigation.navigate('Preview', { image: data.uri });
+            // navigation.navigate('PreviewScreen', { image: data.uri });
         }
     }
 
@@ -148,24 +148,27 @@ export default function Camera({ navigation }: any) {
         if (tomarFoto && faces && faces[0]) {
             // console.log("--->",JSON.stringify(faces, null, 2));
             // console.log("--->",faces);
-            // console.log("Y-->",faces[0].yawAngle +  "\t R-->",faces[0].rollAngle + "\t\t I-->", faces[0].inclinationAngle);
+            console.log("Y-->", faces[0].yawAngle + "\t R-->", faces[0].rollAngle + "\t\t I-->", faces[0].inclinationAngle);
 
-            if (faces[0].inclinationAngle > 20 && faces[0].inclinationAngle < 25) {
+            if (faces[0].inclinationAngle > 20 && faces[0].yawAngle > 2) {
                 console.log('mirando arriba');
+                console.log('Y-->', faces[0].yawAngle + '\t R-->', faces[0].rollAngle + '\t\t I-->', faces[0].inclinationAngle);
                 takePicture('arriba_');
                 setTomarFoto(false);
                 return;
             }
 
-            if (faces[0].inclinationAngle > -25 && faces[0].inclinationAngle < -20) {
+            if (faces[0].inclinationAngle < -10 && faces[0].yawAngle < -0.5) {
                 console.log('mirando abajo');
+                console.log('Y-->', faces[0].yawAngle + '\t R-->', faces[0].rollAngle + '\t\t I-->', faces[0].inclinationAngle);
                 takePicture('abajo_');
                 setTomarFoto(false);
                 return;
             }
 
-            if ((faces[0].yawAngle === 0)) {
+            if ((faces[0].yawAngle > 0 && faces[0].yawAngle < 2 && faces[0].inclinationAngle > 0 && faces[0].inclinationAngle < 2)) {
                 console.log('mirando al frente');
+                console.log('Y-->', faces[0].yawAngle + '\t R-->', faces[0].rollAngle + '\t\t I-->', faces[0].inclinationAngle);
                 takePicture('frente_');
                 setTomarFoto(false);
                 return;
@@ -218,16 +221,18 @@ export default function Camera({ navigation }: any) {
                 <Text style={styles.text}>{'Asegurate que la foto \n haya sido tomada correctamente'}</Text>
             </View>
             {/* <Mascara /> */}
-            <View style={styles.iconFace}>
+            {/* <View style={styles.iconFace}>
                 <Icon name="bug" size={50} color="blue" />
             </View>
             <View style={styles.iconArrowLeft}>
                 <Icon name="chevron-left" size={40} color="black" />
-            </View>
+            </View> */}
             {/* <View style={styles.circuloInterior} /> */}
-            <Pressable onPress={()=>setTomarFoto(true)} style={styles.boton}>
+            <Pressable onPress={() => setTomarFoto(true)} style={styles.boton}>
                 <Text style={styles.label}> RESET </Text>
             </Pressable>
+
+            <SettingsModal setShowModal={setShowModal} showModal={showModal} />
         </View >
     );
 }
