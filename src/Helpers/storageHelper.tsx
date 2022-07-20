@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { facePosition } from './Enums/facePosition.enum';
-import { SliderSetting } from './Models/SliderSetting.model';
+import { facePosition } from '../Enums/facePosition.enum';
+import { SliderSetting } from '../Models/SliderSetting.model';
 
 export async function storageSliderInit() {
     await AsyncStorage.setItem(

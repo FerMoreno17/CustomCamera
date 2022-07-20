@@ -1,10 +1,10 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React from 'react';
-import CameraScreen from './Camera.component';
-import PreviewScreen from './Preview.component';
+import HomeScreen from '../Screens/HomeScreen';
+import PreviewScreen from '../Screens/PreviewScreen';
 
 type RootStackParamList = {
-  CameraScreen: undefined;
+  HomeScreen: undefined;
   PreviewScreen: { image: string };
 }
 
@@ -19,7 +19,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export default function Navigator() {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="CameraScreen" component={CameraScreen} />
+      <Stack.Screen name="HomeScreen" component={HomeScreen} />
       <Stack.Screen name="PreviewScreen" component={PreviewScreen} />
     </Stack.Navigator>
   );

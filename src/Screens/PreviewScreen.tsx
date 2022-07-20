@@ -34,7 +34,7 @@ export default function PreviewScreen({ route }: any) {
             <Image source={{ uri: image }} style={styles.image} />
             <Pressable
                 style={styles.button}
-                onPress={() => navigation.navigate('CameraScreen')}>
+                onPress={() => navigation.navigate('HomeScreen')}>
                 <Text style={styles.label}>Volver</Text>
             </Pressable>
         </SafeAreaView>

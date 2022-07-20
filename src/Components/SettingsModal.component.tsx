@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Modal, Pressable, StyleSheet, ScrollView, Dimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome5';
-import { facePosition } from './Enums/facePosition.enum';
+import { facePosition } from '../Enums/facePosition.enum';
 import SliderApp from './SliderApp.component';
 
 interface ModalProps {

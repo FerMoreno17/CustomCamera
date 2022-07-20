@@ -3,9 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, Text, Dimensions } from 'react-native';
 import MultiSlider from '@ptomasroos/react-native-multi-slider';
-import { getSlidersSettings, storageSlidersSettings } from './storageHelper';
-import { facePosition } from './Enums/facePosition.enum';
-import { SliderSetting } from './Models/SliderSetting.model';
+import { getSlidersSettings, storageSlidersSettings } from '../Helpers/storageHelper';
+import { facePosition } from '../Enums/facePosition.enum';
+import { SliderSetting } from '../Models/SliderSetting.model';
 
 interface SliderProps {
     start: number;

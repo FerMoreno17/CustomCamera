@@ -2,15 +2,16 @@
 import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import { RNCamera, TakePictureOptions } from 'react-native-camera';
-import RNFS from 'react-native-fs';
 // import Mascara from './Mascara.component';
 // import Icon from 'react-native-vector-icons/FontAwesome5';
 // import { useNavigation } from '@react-navigation/native';
 // import FabIcon from './FabIcon.component';
-import SettingsModal from './SettingsModal.component';
+import SettingsModal from '../Components/SettingsModal.component';
+import { cropImage } from '../Helpers/CropImageHelper';
+import { getBase64 } from '../Helpers/Base64Helper';
 
 export default function CameraScreen() {
-    let camera = useRef(null);
+    let camera = useRef<RNCamera>(null);
     // const navigation = useNavigation();
     const { width, height } = Dimensions.get('screen');
     const [tomarFoto, setTomarFoto] = useState(true);
@@ -81,74 +82,35 @@ export default function CameraScreen() {
         setTomarFoto(true);
     }, []);
 
-    //-----------------------------------------------------------
-    // get a list of files and directories in the main bundle
-    RNFS.readDir(RNFS.DownloadDirectoryPath) // On Android, use "RNFS.DocumentDirectoryPath" (MainBundlePath is not defined)
-        .then((result) => {
-            // console.log('GOT RESULT', result[0]);
-            // stat the first file
-            return Promise.all([RNFS.stat(result[0].path), result[0].path]);
-        })
-        .then((statResult) => {
-            if (statResult[0].isFile()) {
-                return RNFS.readFile(statResult[1], 'utf8');
-            }
-            return 'no file';
-        })
-        .catch((err) => {
-            console.log(err.message, err.code);
-        });
-    //---------------------------------------------------------------
-
     async function takePicture(desafio: string) {
         if (camera) {
-            const options: TakePictureOptions = { quality: 0.5, base64: true };
-            const data = await camera.current?.takePictureAsync(options);
-            await getBase64(data, desafio);
-            // navigation.navigate('PreviewScreen', { image: data.uri });
+            const options: TakePictureOptions = {
+                quality: 1,
+                base64: true,
+                orientation: 'portrait',
+                //Android
+                fixOrientation: true,
+                //iOS
+                forceUpOrientation: true,
+            };
+            const foto = await camera.current?.takePictureAsync(options);
+
+            if (foto?.base64) {
+                camera?.current?.pausePreview();
+                const image = await cropImage(foto.uri, foto?.width, foto?.height)
+                    .catch(error => console.log('errorCam==>', error));
+                await getBase64(image, desafio);
+                // navigation.navigate('PreviewScreen', { image: data.uri });
+            }
         }
+
     }
-
-    async function getBase64(imageData: any, desafio: string) {
-        const filepath = await imageData.uri.split('//')[1];
-        const imageUriBase64 = await RNFS.readFile(filepath, 'base64');
-
-        //-----------------------------
-        // create a path you want to write to
-        // :warning: on iOS, you cannot write into `RNFS.MainBundlePath`,
-        // but `RNFS.DocumentDirectoryPath` exists on both platforms and is writable
-
-        //mover a otro lado
-        var date = new Date();
-        var day = date.getDate();
-        var month = date.getMonth();
-        var year = date.getFullYear();
-        var hour = date.getTime();
-        var temp_date = day + month + year + '_' + hour;
-        var temp_name = `${desafio}_${temp_date}`;
-
-        var path = `${RNFS.DownloadDirectoryPath}/${temp_name}.txt`;
-
-        // write the file
-        RNFS.writeFile(path, imageUriBase64.toString(), 'utf8')
-            .then((success) => {
-                console.log('FILE WRITTEN!', success);
-            })
-            .catch((err) => {
-                console.log(err.message);
-            });
-        //----------------------------------------------------------
-
-        return imageUriBase64;
-    }
-
-    //probar como reacciona la captura automatica cuando el rostro se mueve rapidamente.
 
     const handleFaceDetection = ({ faces }: any) => {
         if (tomarFoto && faces && faces[0]) {
             // console.log("--->",JSON.stringify(faces, null, 2));
             // console.log("--->",faces);
-            console.log("Y-->", faces[0].yawAngle + "\t R-->", faces[0].rollAngle + "\t\t I-->", faces[0].inclinationAngle);
+            console.log('Y-->', faces[0].yawAngle + '\t R-->', faces[0].rollAngle + '\t\t I-->', faces[0].inclinationAngle);
 
             if (faces[0].inclinationAngle > 20 && faces[0].yawAngle > 2) {
                 console.log('mirando arriba');

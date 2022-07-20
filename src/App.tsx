@@ -1,9 +1,9 @@
 /* eslint-disable prettier/prettier */
 import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import Navigator from './Navigator.component';
+import Navigator from './Navigator/Navigator.component';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { storageSliderInit } from './storageHelper';
+import { storageSliderInit } from './Helpers/storageHelper';
 
 const App = () => {
   useEffect(() => {
@@ -14,7 +14,6 @@ const App = () => {
   async function checkStorage() {
     const response = await AsyncStorage.getItem('@storage_Frente');
     if (response === null) {
-      console.log('entro');
       storageSliderInit();
     }
   }
