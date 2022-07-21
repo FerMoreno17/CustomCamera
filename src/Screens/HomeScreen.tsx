@@ -135,7 +135,7 @@ export default function CameraScreen() {
         if (tomarFoto && faces && faces[0]) {
             // console.log("--->",JSON.stringify(faces, null, 2));
             // console.log("--->",faces);
-            console.log('Y-->', gesto.yawAngle + '\t R-->', gesto.rollAngle + '\t\t I-->', gesto.inclinationAngle);
+            // console.log('Y-->', gesto.yawAngle + '\t R-->', gesto.rollAngle + '\t\t I-->', gesto.inclinationAngle);
             if ( gesto.inclinationAngle > gestoArriba[0]
                 && gesto.inclinationAngle < gestoArriba[1]) {
                 setGestoMensaje('mirando arriba');
