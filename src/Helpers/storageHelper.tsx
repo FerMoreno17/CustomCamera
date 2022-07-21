@@ -12,20 +12,20 @@ export async function storageSliderInit() {
             { gesture: facePosition.Frente, valueStart: 0, valueEnd: 2 }
         )));
     store.dispatch(setFrenteValues([0, 2]));
-    console.log('pase frente');
+
     await AsyncStorage.setItem(
         '@storage_Abajo',
         JSON.stringify(new SliderSetting(
             { gesture: facePosition.Abajo, valueStart: -20, valueEnd: -10 }
         )));
-    store.dispatch(setAbajoValues([-20, -25]));
+    store.dispatch(setAbajoValues([-20, -10]));
 
     await AsyncStorage.setItem(
         '@storage_Arriba',
         JSON.stringify(new SliderSetting(
             { gesture: facePosition.Arriba, valueStart: 20, valueEnd: 25 }
         )));
-    store.dispatch(setFrenteValues([20, 25]));
+    store.dispatch(setArribaValues([20, 25]));
 
     await AsyncStorage.setItem(
         '@storage_Izquierda',

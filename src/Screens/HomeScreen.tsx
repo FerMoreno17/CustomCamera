@@ -1,8 +1,7 @@
 /* eslint-disable react-native/no-inline-styles */
 import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
-import { RNCamera, TakePictureOptions } from 'react-native-camera';
-// import Mascara from './Mascara.component';
+import { RNCamera, TakePictureOptions } from '../react-native-camera';
 // import Icon from 'react-native-vector-icons/FontAwesome5';
 // import { useNavigation } from '@react-navigation/native';
 // import FabIcon from './FabIcon.component';
@@ -10,6 +9,7 @@ import SettingsModal from '../Components/SettingsModal.component';
 import { cropImage } from '../Helpers/CropImageHelper';
 import { getBase64 } from '../Helpers/Base64Helper';
 import { useAppSelector } from '../Redux/hooks';
+import Mascara from '../Components/Mascara.component';
 
 export default function CameraScreen() {
     let cameraRef = useRef<RNCamera>(null);
@@ -17,7 +17,7 @@ export default function CameraScreen() {
     const { width, height } = Dimensions.get('screen');
     const [tomarFoto, setTomarFoto] = useState(true);
     const [showModal, setShowModal] = useState(false);
-    const [gestMensaje, setGestoMensaje] = useState('');
+    const [gestoMensaje, setGestoMensaje] = useState('');
 
     const [gestoArriba, setGestoArriba] = useState<number[]>([]);
     const [gestoAbajo, setGestoAbajo] = useState<number[]>([]);
@@ -51,12 +51,6 @@ export default function CameraScreen() {
             width: width,
             height: height,
         },
-        containerText: {
-            zIndex: 2,
-            position: 'absolute',
-            bottom: height * 0.25,
-            left: width * 0.2,
-        },
         boton: {
             position: 'absolute',
             bottom: 20,
@@ -67,10 +61,19 @@ export default function CameraScreen() {
             alignSelf: 'center',
             margin: 20,
         },
-        text: {
+        containerMensaje: {
+            backgroundColor:'#2196F3',
+            padding:10,
+            borderRadius:10,
+            justifyContent:'center',
+            alignItems:'center',
+            position:'absolute',
+            bottom:height * 0.2,
+            zIndex:99,
+        },
+        mensaje: {
             color: 'black',
-            fontSize: 16,
-            textAlign: 'center',
+            fontSize: 24,
         },
         label: {
             color: 'black',
@@ -132,12 +135,17 @@ export default function CameraScreen() {
         if (tomarFoto && faces && faces[0]) {
             // console.log("--->",JSON.stringify(faces, null, 2));
             // console.log("--->",faces);
-            // console.log('Y-->', gesto.yawAngle + '\t R-->', gesto.rollAngle + '\t\t I-->', gesto.inclinationAngle);
-
-            if (gesto.yawAngle > 2
-                && gesto.inclinationAngle > gestoArriba[0]
+            console.log('Y-->', gesto.yawAngle + '\t R-->', gesto.rollAngle + '\t\t I-->', gesto.inclinationAngle);
+            if ( gesto.inclinationAngle > gestoArriba[0]
                 && gesto.inclinationAngle < gestoArriba[1]) {
                 setGestoMensaje('mirando arriba');
+
+                console.log(
+                    'Y-->', gesto.yawAngle +
+                '\t R-->', gesto.rollAngle +
+                '\t\t I-->', gesto.inclinationAngle
+                );
+
                 // takePicture('arriba_');
                 // setTomarFoto(false);
                 // return;
@@ -147,6 +155,11 @@ export default function CameraScreen() {
                 && gesto.inclinationAngle > gestoAbajo[0]
                 && gesto.inclinationAngle < gestoAbajo[1]) {
                 setGestoMensaje('mirando abajo');
+                console.log(
+                    'Y-->', gesto.yawAngle +
+                '\t R-->', gesto.rollAngle +
+                '\t\t I-->', gesto.inclinationAngle
+                );
                 // takePicture('abajo_');
                 // setTomarFoto(false);
                 // return;
@@ -155,8 +168,13 @@ export default function CameraScreen() {
             if ((gesto.yawAngle > gestoFrente[0]
                 && gesto.yawAngle < gestoFrente[1]
                 && gesto.inclinationAngle > 0
-                && gesto.inclinationAngle < 2)) {
+                && gesto.inclinationAngle < 10)) {
                 setGestoMensaje('mirando al frente');
+                console.log(
+                    'Y-->', gesto.yawAngle +
+                '\t R-->', gesto.rollAngle +
+                '\t\t I-->', gesto.inclinationAngle
+                );
                 // takePicture('frente_');
                 // setTomarFoto(false);
                 // return;
@@ -165,6 +183,11 @@ export default function CameraScreen() {
             if (gesto.yawAngle > gestoDerecha[0]
                 && gesto.yawAngle < gestoDerecha[1]) {
                 setGestoMensaje('mirando a la derecha');
+                console.log(
+                    'Y-->', gesto.yawAngle +
+                '\t R-->', gesto.rollAngle +
+                '\t\t I-->', gesto.inclinationAngle
+                );
                 // takePicture('derecha_');
                 // setTomarFoto(false);
                 // return;
@@ -173,6 +196,11 @@ export default function CameraScreen() {
             if (gesto.yawAngle > gestoIzquierda[0]
                 && gesto.yawAngle < gestoIzquierda[1]) {
                 setGestoMensaje('mirando a la izquierda');
+                console.log(
+                    'Y-->', gesto.yawAngle +
+                '\t R-->', gesto.rollAngle +
+                '\t\t I-->', gesto.inclinationAngle
+                );
                 // takePicture('izquierda_');
                 // setTomarFoto(false);
                 // return;
@@ -208,10 +236,10 @@ export default function CameraScreen() {
                     buttonNegative: 'Cancel',
                 }}
             />
-            <View style={styles.containerText}>
-                <Text style={styles.text}>{gestMensaje}</Text>
+            <View style={styles.containerMensaje}>
+                <Text style={styles.mensaje}>{gestoMensaje}</Text>
             </View>
-            {/* <Mascara /> */}
+            <Mascara />
             {/* <View style={styles.iconFace}>
                 <Icon name="bug" size={50} color="blue" />
             </View>
