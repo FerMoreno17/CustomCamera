@@ -33,6 +33,7 @@ export default function SettingsModal({ showModal, setShowModal }: ModalProps) {
             shadowOpacity: 0.25,
             shadowRadius: 4,
             elevation: 5,
+            maxHeight:500,
         },
         button: {
             borderRadius: 20,
@@ -56,7 +57,8 @@ export default function SettingsModal({ showModal, setShowModal }: ModalProps) {
             textAlign: 'center',
             fontWeight: 'bold',
             fontSize: 20,
-            marginBottom:10,
+            marginBottom: 10,
+            color:'#2196F3',
         },
         fav: {
             backgroundColor: '#2196F3',
@@ -101,27 +103,27 @@ export default function SettingsModal({ showModal, setShowModal }: ModalProps) {
                                     <SliderApp
                                         position={facePosition.Frente}
                                         start={0}
-                                        end={10}
+                                        end={2}
                                     />
                                     <SliderApp
                                         position={facePosition.Abajo}
-                                        start={20}
-                                        end={40}
+                                        start={-20}
+                                        end={-10}
                                     />
                                     <SliderApp
                                         position={facePosition.Arriba}
                                         start={20}
-                                        end={40}
+                                        end={25}
                                     />
                                     <SliderApp
                                         position={facePosition.Izquierda}
                                         start={20}
-                                        end={40}
+                                        end={25}
                                     />
                                     <SliderApp
                                         position={facePosition.Derecha}
-                                        start={20}
-                                        end={40}
+                                        start={-25}
+                                        end={-20}
                                     />
                                 </View>
                             </ScrollView>

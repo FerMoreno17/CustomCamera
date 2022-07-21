@@ -58,14 +58,17 @@ export default function SliderApp({ start, end, position }: SliderProps) {
             position:'absolute',
             top:2,
             left:10,
+            color:'black',
         },
         textStart: {
             flex: 1,
             textAlign: 'left',
+            color:'black',
         },
         textEnd: {
             flex: 1,
             textAlign: 'right',
+            color:'black',
         },
         row: {
             flexDirection: 'row',

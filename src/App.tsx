@@ -4,23 +4,27 @@ import { NavigationContainer } from '@react-navigation/native';
 import Navigator from './Navigator/Navigator.component';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { storageSliderInit } from './Helpers/storageHelper';
+import { store } from './Redux/store';
+import { Provider } from 'react-redux';
 
 const App = () => {
   useEffect(() => {
-    // AsyncStorage.clear();
+    AsyncStorage.clear();
     checkStorage();
   });
 
   async function checkStorage() {
     const response = await AsyncStorage.getItem('@storage_Frente');
     if (response === null) {
-      storageSliderInit();
+      await storageSliderInit();
     }
   }
 
   return (
     <NavigationContainer>
-      <Navigator />
+      <Provider store={store}>
+        <Navigator />
+      </Provider>
     </NavigationContainer>
   );
 };

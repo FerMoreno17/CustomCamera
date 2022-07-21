@@ -9,13 +9,34 @@ import { RNCamera, TakePictureOptions } from 'react-native-camera';
 import SettingsModal from '../Components/SettingsModal.component';
 import { cropImage } from '../Helpers/CropImageHelper';
 import { getBase64 } from '../Helpers/Base64Helper';
+import { useAppSelector } from '../Redux/hooks';
 
 export default function CameraScreen() {
-    let camera = useRef<RNCamera>(null);
+    let cameraRef = useRef<RNCamera>(null);
     // const navigation = useNavigation();
     const { width, height } = Dimensions.get('screen');
     const [tomarFoto, setTomarFoto] = useState(true);
     const [showModal, setShowModal] = useState(false);
+    const [gestMensaje, setGestoMensaje] = useState('');
+
+    const [gestoArriba, setGestoArriba] = useState<number[]>([]);
+    const [gestoAbajo, setGestoAbajo] = useState<number[]>([]);
+    const [gestoFrente, setGestoFrente] = useState<number[]>([]);
+    const [gestoDerecha, setGestoDerecha] = useState<number[]>([]);
+    const [gestoIzquierda, setGestoIzquierda] = useState<number[]>([]);
+
+    const {
+        abajo_values,
+        arriba_values,
+        derecha_values,
+        frente_values,
+        izquierda_values } = useAppSelector(state => state.setting);
+
+    useEffect(() => { setGestoAbajo(abajo_values); }, [abajo_values]);
+    useEffect(() => { setGestoArriba(arriba_values); }, [arriba_values]);
+    useEffect(() => { setGestoFrente(frente_values); }, [frente_values]);
+    useEffect(() => { setGestoDerecha(derecha_values); }, [derecha_values]);
+    useEffect(() => { setGestoIzquierda(izquierda_values); }, [izquierda_values]);
 
     const styles = StyleSheet.create({
         container: {
@@ -83,7 +104,7 @@ export default function CameraScreen() {
     }, []);
 
     async function takePicture(desafio: string) {
-        if (camera) {
+        if (cameraRef) {
             const options: TakePictureOptions = {
                 quality: 1,
                 base64: true,
@@ -93,10 +114,10 @@ export default function CameraScreen() {
                 //iOS
                 forceUpOrientation: true,
             };
-            const foto = await camera.current?.takePictureAsync(options);
+            const foto = await cameraRef.current?.takePictureAsync(options);
 
             if (foto?.base64) {
-                camera?.current?.pausePreview();
+                cameraRef?.current?.pausePreview();
                 const image = await cropImage(foto.uri, foto?.width, foto?.height)
                     .catch(error => console.log('errorCam==>', error));
                 await getBase64(image, desafio);
@@ -107,55 +128,63 @@ export default function CameraScreen() {
     }
 
     const handleFaceDetection = ({ faces }: any) => {
+        const gesto = faces[0];
         if (tomarFoto && faces && faces[0]) {
             // console.log("--->",JSON.stringify(faces, null, 2));
             // console.log("--->",faces);
-            console.log('Y-->', faces[0].yawAngle + '\t R-->', faces[0].rollAngle + '\t\t I-->', faces[0].inclinationAngle);
+            // console.log('Y-->', gesto.yawAngle + '\t R-->', gesto.rollAngle + '\t\t I-->', gesto.inclinationAngle);
 
-            if (faces[0].inclinationAngle > 20 && faces[0].yawAngle > 2) {
-                console.log('mirando arriba');
-                console.log('Y-->', faces[0].yawAngle + '\t R-->', faces[0].rollAngle + '\t\t I-->', faces[0].inclinationAngle);
-                takePicture('arriba_');
-                setTomarFoto(false);
-                return;
+            if (gesto.yawAngle > 2
+                && gesto.inclinationAngle > gestoArriba[0]
+                && gesto.inclinationAngle < gestoArriba[1]) {
+                setGestoMensaje('mirando arriba');
+                // takePicture('arriba_');
+                // setTomarFoto(false);
+                // return;
             }
 
-            if (faces[0].inclinationAngle < -10 && faces[0].yawAngle < -0.5) {
-                console.log('mirando abajo');
-                console.log('Y-->', faces[0].yawAngle + '\t R-->', faces[0].rollAngle + '\t\t I-->', faces[0].inclinationAngle);
-                takePicture('abajo_');
-                setTomarFoto(false);
-                return;
+            if (gesto.yawAngle < -0.5
+                && gesto.inclinationAngle > gestoAbajo[0]
+                && gesto.inclinationAngle < gestoAbajo[1]) {
+                setGestoMensaje('mirando abajo');
+                // takePicture('abajo_');
+                // setTomarFoto(false);
+                // return;
             }
 
-            if ((faces[0].yawAngle > 0 && faces[0].yawAngle < 2 && faces[0].inclinationAngle > 0 && faces[0].inclinationAngle < 2)) {
-                console.log('mirando al frente');
-                console.log('Y-->', faces[0].yawAngle + '\t R-->', faces[0].rollAngle + '\t\t I-->', faces[0].inclinationAngle);
-                takePicture('frente_');
-                setTomarFoto(false);
-                return;
+            if ((gesto.yawAngle > gestoFrente[0]
+                && gesto.yawAngle < gestoFrente[1]
+                && gesto.inclinationAngle > 0
+                && gesto.inclinationAngle < 2)) {
+                setGestoMensaje('mirando al frente');
+                // takePicture('frente_');
+                // setTomarFoto(false);
+                // return;
             }
 
-            if (faces[0].yawAngle > -25 && faces[0].yawAngle < -20) {
-                console.log('mirando a la derecha');
-                takePicture('derecha_');
-                setTomarFoto(false);
-                return;
+            if (gesto.yawAngle > gestoDerecha[0]
+                && gesto.yawAngle < gestoDerecha[1]) {
+                setGestoMensaje('mirando a la derecha');
+                // takePicture('derecha_');
+                // setTomarFoto(false);
+                // return;
             }
 
-            if (faces[0].yawAngle > 20 && faces[0].yawAngle < 25) {
-                console.log('mirando a la izquierda');
-                takePicture('izquierda_');
-                setTomarFoto(false);
-                return;
+            if (gesto.yawAngle > gestoIzquierda[0]
+                && gesto.yawAngle < gestoIzquierda[1]) {
+                setGestoMensaje('mirando a la izquierda');
+                // takePicture('izquierda_');
+                // setTomarFoto(false);
+                // return;
             }
         }
     };
 
+
     return (
         <View style={{ flex: 1 }}>
             <RNCamera
-                ref={camera}
+                ref={cameraRef}
                 style={styles.camera}
                 type={RNCamera.Constants.Type.front}
 
@@ -180,7 +209,7 @@ export default function CameraScreen() {
                 }}
             />
             <View style={styles.containerText}>
-                <Text style={styles.text}>{'Asegurate que la foto \n haya sido tomada correctamente'}</Text>
+                <Text style={styles.text}>{gestMensaje}</Text>
             </View>
             {/* <Mascara /> */}
             {/* <View style={styles.iconFace}>
